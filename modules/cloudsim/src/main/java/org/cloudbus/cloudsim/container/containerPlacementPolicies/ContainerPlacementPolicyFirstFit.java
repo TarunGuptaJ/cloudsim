@@ -26,4 +26,9 @@ public class ContainerPlacementPolicyFirstFit extends ContainerPlacementPolicy {
         return containerVm;
     }
 
+    @Override
+    public  String getPolicyType_t(){
+        return "FirstFit";
+    }
+
 }

@@ -36,4 +36,8 @@ public class ContainerPlacementPolicyHybrid extends ContainerPlacementPolicy{
         return selectedVM;
     }
 
+    @Override
+    public  String getPolicyType_t(){
+        return "Hybrid";
+    }
 }

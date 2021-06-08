@@ -18,6 +18,8 @@ public abstract class ContainerPlacementPolicy {
      * @param vmList the host
      * @return the destination vm to place container
      */
+    public String policyType_t;
+
     public abstract ContainerVm getContainerVm(List<ContainerVm> vmList, Object obj, Set<? extends ContainerVm> excludedVmList);
 
     public  ContainerVm getContainerVm(List<ContainerVm> vmList, Object obj, Set<? extends ContainerVm> excludedVmList,List<Container> containerList){
@@ -31,5 +33,7 @@ public abstract class ContainerPlacementPolicy {
         }
         return selectedVM;
     }
+
+    public abstract String getPolicyType_t();
 
 }

@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.cloudbus.cloudsim.container.containerPlacementPolicies.ContainerPlacementPolicy;
 import org.cloudbus.cloudsim.container.core.Container;
 import org.cloudbus.cloudsim.container.core.ContainerVm;
 
@@ -29,7 +30,7 @@ public abstract class ContainerAllocationPolicy {
 		 * The Vm list.
 		 */
 		private List<? extends ContainerVm> containerVmList;
-
+		private String policyType_t;
 		/**
 		 * Allocates a new VmAllocationPolicy object.
 		 *
@@ -40,6 +41,14 @@ public abstract class ContainerAllocationPolicy {
 			setContainerVmList(new ArrayList<ContainerVm>());
 		}
 
+		public ContainerAllocationPolicy(ContainerPlacementPolicy containerPlacementPolicy1) {
+			setContainerVmList(new ArrayList<ContainerVm>());
+			policyType_t = containerPlacementPolicy1.getPolicyType_t();
+		}
+
+		public String getContainerPlacementPolicy_t(){
+			return policyType_t;
+		}
 		/**
 		 * Allocates a host for a given VM. The host to be allocated is the one that was already
 		 * reserved.

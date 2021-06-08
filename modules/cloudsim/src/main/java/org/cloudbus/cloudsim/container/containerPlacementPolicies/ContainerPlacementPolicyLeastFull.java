@@ -28,4 +28,8 @@ public class ContainerPlacementPolicyLeastFull extends ContainerPlacementPolicy{
            }
         return selectedVm;
     }
+    @Override
+    public  String getPolicyType_t(){
+        return "LeastFull";
+    }
 }

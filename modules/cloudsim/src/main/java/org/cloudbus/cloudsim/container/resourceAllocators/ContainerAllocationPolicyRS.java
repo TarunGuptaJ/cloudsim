@@ -17,9 +17,10 @@ public class ContainerAllocationPolicyRS extends  PowerContainerAllocationPolicy
 
 
     public ContainerAllocationPolicyRS(ContainerPlacementPolicy containerPlacementPolicy1) {
-        super();
+        super(containerPlacementPolicy1);
         setContainerPlacementPolicy(containerPlacementPolicy1);
     }
+
 
 
     @Override

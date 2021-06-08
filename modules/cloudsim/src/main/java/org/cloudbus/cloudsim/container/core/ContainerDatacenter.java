@@ -283,9 +283,14 @@ public class ContainerDatacenter extends SimEntity {
 
     public void processContainerSubmit(SimEvent ev, boolean ack) {
         List<Container> containerList = (List<Container>) ev.getData();
+        ContainerAllocationPolicy temp = getContainerAllocationPolicy();
+        System.out.println("----------------temp.getContainerPlacementPolicy()");
+
+        System.out.println(temp.getContainerPlacementPolicy_t());
+        System.out.println("----------------temp.getContainerPlacementPolicy()");
 
         for (Container container : containerList) {
-            boolean result = getContainerAllocationPolicy().allocateVmForContainer(container, getContainerVmList());
+            boolean result = temp.allocateVmForContainer(container, getContainerVmList());
             if (ack) {
                 int[] data = new int[3];
                 data[1] = container.getId();
@@ -295,7 +300,7 @@ public class ContainerDatacenter extends SimEntity {
                     data[2] = CloudSimTags.FALSE;
                 }
                 if (result) {
-                    ContainerVm containerVm = getContainerAllocationPolicy().getContainerVm(container);
+                    ContainerVm containerVm = temp.getContainerVm(container);
                     data[0] = containerVm.getId();
                     if(containerVm.getId() == -1){
 

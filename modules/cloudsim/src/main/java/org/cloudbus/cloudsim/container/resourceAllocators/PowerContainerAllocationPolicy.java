@@ -1,5 +1,6 @@
 package org.cloudbus.cloudsim.container.resourceAllocators;
 
+import org.cloudbus.cloudsim.container.containerPlacementPolicies.ContainerPlacementPolicy;
 import org.cloudbus.cloudsim.container.core.Container;
 import org.cloudbus.cloudsim.container.core.ContainerVm;
 import org.cloudbus.cloudsim.Log;
@@ -25,6 +26,9 @@ public abstract class PowerContainerAllocationPolicy extends ContainerAllocation
             super();
         }
 
+        public PowerContainerAllocationPolicy(ContainerPlacementPolicy containerPlacementPolicy1) {
+            super(containerPlacementPolicy1);
+        }
         /*
          * (non-Javadoc)
          * @see org.cloudbus.cloudsim.VmAllocationPolicy#allocateHostForVm(org.cloudbus.cloudsim.Vm)

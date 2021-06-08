@@ -30,4 +30,8 @@ public class ContainerPlacementPolicyRandomSelection extends ContainerPlacementP
             return containerVm;
         }
     }
+    @Override
+    public  String getPolicyType_t(){
+        return "Random";
+    }
 }
