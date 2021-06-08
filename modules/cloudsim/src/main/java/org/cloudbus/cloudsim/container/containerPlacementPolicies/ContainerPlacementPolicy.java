@@ -1,5 +1,6 @@
 package org.cloudbus.cloudsim.container.containerPlacementPolicies;
 
+import org.cloudbus.cloudsim.container.core.Container;
 import org.cloudbus.cloudsim.container.core.ContainerVm;
 
 import java.util.List;
@@ -18,5 +19,17 @@ public abstract class ContainerPlacementPolicy {
      * @return the destination vm to place container
      */
     public abstract ContainerVm getContainerVm(List<ContainerVm> vmList, Object obj, Set<? extends ContainerVm> excludedVmList);
+
+    public  ContainerVm getContainerVm(List<ContainerVm> vmList, Object obj, Set<? extends ContainerVm> excludedVmList,List<Container> containerList){
+        ContainerVm selectedVM = null;
+        for (ContainerVm i : vmList) {
+            if (excludedVmList.contains(i)) {
+                continue;
+            }
+            selectedVM = i;
+            break;
+        }
+        return selectedVM;
+    }
 
 }

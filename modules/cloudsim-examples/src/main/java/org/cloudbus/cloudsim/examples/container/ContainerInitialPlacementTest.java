@@ -23,8 +23,12 @@ public class ContainerInitialPlacementTest {
          * The experiments can be repeated for (repeat - runtime +1) times.
          * Please set these values as the arguments of the main function or set them bellow:
          */
-        int runTime = Integer.parseInt(args[0]);
-        int repeat = Integer.parseInt(args[1]);
+//        int runTime = Integer.parseInt(args[0]);
+//        int repeat = Integer.parseInt(args[1]);
+
+        int runTime = 0;
+        int repeat = 1;
+
         for (int i = runTime; i < repeat; ++i) {
             boolean enableOutput = true;
             boolean outputToFile = true;
@@ -35,19 +39,22 @@ public class ContainerInitialPlacementTest {
             /**
              * The output folder for the logs. The log files would be located in this folder.
              */
-            String outputFolder = "~/Results";
+            String outputFolder = "~/ResultsFirstFit2";
             /**
              * The allocation policy for VMs.
              */
             String vmAllocationPolicy = "MSThreshold-Under_0.80_0.70";
+//            String vmAllocationPolicy = "dvfs";
+
+
             /**
              * The selection policy for containers where a container migration is triggered.
              */
             String containerSelectionPolicy = "MaxUsage";
-            /**
+            /**z
              * The allocation policy used for allocating containers to VMs.
              */
-            String containerAllocationPolicy = "MostFull";
+            String containerAllocationPolicy = "Hybrid";
             /**
              * The host selection policy determines which hosts should be selected as the migration destination.
              */
@@ -57,7 +64,7 @@ public class ContainerInitialPlacementTest {
              * "Overloaded"
              */
             String vmSelectionPolicy = "VmMaxC";
-            /**
+            /**x
              * The container overbooking factor is used for overbooking resources of the VM. In this specific case
              * the overbooking is performed on CPU only.
              */

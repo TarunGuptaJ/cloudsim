@@ -182,7 +182,7 @@ public abstract class RunnerAbs {
             broker.submitContainerList(containerList);
             broker.submitCloudletList(cloudletList.subList(0, containerList.size()));
             ;
-            CloudSim.terminateSimulation(86400.0D);
+            CloudSim.terminateSimulation(86400.0);
             double lastClock = CloudSim.startSimulation();
             List newList = broker.getCloudletReceivedList();
             Log.printLine("Received " + newList.size() + " cloudlets");
@@ -288,6 +288,11 @@ public abstract class RunnerAbs {
             case "Random":
                 placementPolicy = new ContainerPlacementPolicyRandomSelection();
                 break;
+
+            case "Hybrid":
+                placementPolicy = new ContainerPlacementPolicyHybrid();
+                break;
+
             default:
                 placementPolicy = null;
                 System.out.println("The container placement policy is not defined");
@@ -295,7 +300,6 @@ public abstract class RunnerAbs {
         }
         return placementPolicy;
     }
-
     protected HostSelectionPolicy getHostSelectionPolicy(String hostSelectionPolicyName) {
         Object hostSelectionPolicy = null;
         if (hostSelectionPolicyName == "FirstFit") {
