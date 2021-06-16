@@ -15,6 +15,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.cloudbus.cloudsim.container.containerPlacementPolicies.hybridAlgorithm;
+
 /**
  * Created by sareh on 10/07/15.
  */
@@ -288,6 +290,16 @@ public class ContainerDatacenter extends SimEntity {
 
         System.out.println(temp.getContainerPlacementPolicy_t());
         System.out.println("----------------temp.getContainerPlacementPolicy()");
+
+        if(temp.getContainerPlacementPolicy_t()=="Hybrid"){
+            boolean result = temp.allocateVmForContainer(container, getContainerVmList());
+            //call a send function for all the containers
+
+
+
+
+        }
+
 
         for (Container container : containerList) {
             boolean result = temp.allocateVmForContainer(container, getContainerVmList());

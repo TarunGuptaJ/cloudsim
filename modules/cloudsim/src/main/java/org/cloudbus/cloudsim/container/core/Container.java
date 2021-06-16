@@ -5,13 +5,14 @@ import org.cloudbus.cloudsim.*;
 import org.cloudbus.cloudsim.util.MathUtil;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
  * Created by sareh on 9/07/15.
  */
-public class Container {
+public class Container implements Comparable<Container> {
 
     /**
      * The id.
@@ -795,6 +796,11 @@ public class Container {
 
     public void setWorkloadMips(double workloadMips) {
         this.workloadMips = workloadMips;
+    }
+
+    @Override
+    public int compareTo(Container c) {
+        return this.getCurrentAllocatedRam().compareTo(c.getCurrentAllocatedRam());
     }
 
     /**
