@@ -20,9 +20,9 @@ public class hybridAlgorithm {
     public Float[] objectiveFunctions;
 
 
-    public hybridAlgorithm(){
-    }
-
-    public
+//    public hybridAlgorithm(){
+//    }
+//
+//    public
 
 }

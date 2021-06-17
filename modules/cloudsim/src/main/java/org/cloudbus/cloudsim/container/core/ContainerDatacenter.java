@@ -1,6 +1,7 @@
 package org.cloudbus.cloudsim.container.core;
 
 
+//import org.cloudbus.cloudsim.container.containerPlacementPolicies.SortByRam;
 import org.cloudbus.cloudsim.container.resourceAllocators.ContainerAllocationPolicy;
 import org.cloudbus.cloudsim.container.resourceAllocators.ContainerVmAllocationPolicy;
 import org.cloudbus.cloudsim.*;
@@ -9,17 +10,22 @@ import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.core.SimEntity;
 import org.cloudbus.cloudsim.core.SimEvent;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.cloudbus.cloudsim.container.containerPlacementPolicies.hybridAlgorithm;
 
 /**
  * Created by sareh on 10/07/15.
  */
+
+class SortByRam implements Comparator<Container> {
+    // Used for sorting in ascending order of
+    // roll number
+    public int compare(Container a, Container b)
+    {
+        return (int) b.getRam() - (int) a.getRam();
+    }
+}
 public class ContainerDatacenter extends SimEntity {
 
     /**
@@ -292,12 +298,23 @@ public class ContainerDatacenter extends SimEntity {
         System.out.println("----------------temp.getContainerPlacementPolicy()");
 
         if(temp.getContainerPlacementPolicy_t()=="Hybrid"){
-            boolean result = temp.allocateVmForContainer(container, getContainerVmList());
+//            boolean result = temp.allocateVmForContainer(container, getContainerVmList());
             //call a send function for all the containers
+        }
+        else if(temp.getContainerPlacementPolicy_t()=="FirstFitDecreasing"){
+
+            Collections.sort(containerList, new SortByRam());
 
 
-
-
+//            ContainerVm containerVm = null;
+//            for (ContainerVm containerVm1 : vmList) {
+//                if (excludedVmList.contains(containerVm1)) {
+//                    continue;
+//                }
+//                containerVm = containerVm1;
+//                break;
+//            }
+//            return containerVm;
         }
 
 

@@ -293,6 +293,11 @@ public abstract class RunnerAbs {
                 placementPolicy = new ContainerPlacementPolicyHybrid();
                 break;
 
+            case "FirstFitDecreasing":
+                placementPolicy = new ContainerPlacementPolicyFFD();
+                break;
+
+
             default:
                 placementPolicy = null;
                 System.out.println("The container placement policy is not defined");

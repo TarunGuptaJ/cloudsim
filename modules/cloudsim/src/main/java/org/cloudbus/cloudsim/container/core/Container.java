@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Created by sareh on 9/07/15.
  */
-public class Container implements Comparable<Container> {
+public class Container{
 
     /**
      * The id.
@@ -798,11 +798,14 @@ public class Container implements Comparable<Container> {
         this.workloadMips = workloadMips;
     }
 
-    @Override
-    public int compareTo(Container c) {
-        return this.getCurrentAllocatedRam().compareTo(c.getCurrentAllocatedRam());
+    class SortByRam implements Comparator<Container> {
+        // Used for sorting in ascending order of
+        // roll number
+        public int compare(Container a, Container b)
+        {
+            return (int) a.getCurrentAllocatedRam() - (int) b.getCurrentAllocatedRam();
+        }
     }
-
     /**
      * Gets the current requested total mips.
      *
