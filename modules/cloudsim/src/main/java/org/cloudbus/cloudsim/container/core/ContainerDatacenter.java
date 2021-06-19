@@ -307,99 +307,76 @@ public class ContainerDatacenter extends SimEntity {
         else if(temp.getContainerPlacementPolicy_t()=="FirstFitDecreasing"){
 
             Collections.sort(containerList, new SortByRam());
-            System.out.println(getContainerVmList());
-            int[] data = new int[3];
-            boolean result = true;
-
-            ContainerPlacementPolicyFFD placementPolicyFFD = new ContainerPlacementPolicyFFD();
-
-            for(Container container_t : containerList){
-                if(ack) {
-                    //checks required : excludedVmlist
-                    //add data variable
-                    data[1] = container_t.getId();
-
-                    boolean found = false;
-                    int tries = 0;
-                    Set<ContainerVm> excludedVmList = new HashSet<>();
-                    data[2] = CloudSimTags.TRUE;
-
-                    ContainerVm containerVm = null;
-
-                    do {
-
-
-                        ContainerVm containerVm2 = placementPolicyFFD.getContainerVm(getContainerVmList(), container_t, excludedVmList);
-
-                        if (containerVm2 == null) {
-                            containerVm = null;
-                        }
-                        if (containerVm2.isSuitableForContainer(container_t)) {
-                            found = true;
-                            containerVm = containerVm2;
-
-                        } else {
-                            excludedVmList.add(containerVm2);
-                            tries++;
-
-                        }
-                    } while (!found & tries < getContainerVmList().size());
-                    data[0] = containerVm.getId();
-                }
-
-
-            }
-
-
-//            ContainerVm containerVm = null;
-//            for (ContainerVm containerVm1 : vmList) {
-//                if (excludedVmList.contains(containerVm1)) {
-//                    continue;
-//                }
-//                containerVm = containerVm1;
-//                break;
-//            }
-//            return containerVm;
-        }
-
-        int count2 = 0;
-
-        for (Container container : containerList) {
-            boolean result = temp.allocateVmForContainer(container, getContainerVmList());
-            if (ack) {
-                int[] data = new int[3];
-                data[1] = container.getId();
-                if (result) {
-                    data[2] = CloudSimTags.TRUE;
-                } else {
-                    data[2] = CloudSimTags.FALSE;
-                }
-                if (result) {
-                    count2++;
-                    System.out.println("count2 : " + count2);
-                    ContainerVm containerVm = temp.getContainerVm(container);
-                    data[0] = containerVm.getId();
-                    if(containerVm.getId() == -1){
-
-                        Log.printConcatLine("The ContainerVM ID is not known (-1) !");
+            for (Container container : containerList) {
+                boolean result = temp.allocateVmForContainer(container, getContainerVmList());
+                if (ack) {
+                    int[] data = new int[3];
+                    data[1] = container.getId();
+                    if (result) {
+                        data[2] = CloudSimTags.TRUE;
+                    } else {
+                        data[2] = CloudSimTags.FALSE;
                     }
-//                    Log.printConcatLine("Assigning the container#" + container.getUid() + "to VM #" + containerVm.getUid());
-                    getContainerList().add(container);
-                    if (container.isBeingInstantiated()) {
-                        container.setBeingInstantiated(false);
+                    if (result) {
+                        ContainerVm containerVm = temp.getContainerVm(container);
+                        data[0] = containerVm.getId();
+                        if(containerVm.getId() == -1){
+
+                            Log.printConcatLine("The ContainerVM ID is not known (-1) !");
+                        }
+    //                    Log.printConcatLine("Assigning the container#" + container.getUid() + "to VM #" + containerVm.getUid());
+                        getContainerList().add(container);
+                        if (container.isBeingInstantiated()) {
+                            container.setBeingInstantiated(false);
+                        }
+                        container.updateContainerProcessing(CloudSim.clock(), getContainerAllocationPolicy().getContainerVm(container).getContainerScheduler().getAllocatedMipsForContainer(container));
+                    } else {
+                        data[0] = -1;
+                        //notAssigned.add(container);
+                        Log.printLine(String.format("Couldn't find a vm to host the container #%s", container.getUid()));
+
                     }
-                    container.updateContainerProcessing(CloudSim.clock(), getContainerAllocationPolicy().getContainerVm(container).getContainerScheduler().getAllocatedMipsForContainer(container));
-                } else {
-                    data[0] = -1;
-                    //notAssigned.add(container);
-                    Log.printLine(String.format("Couldn't find a vm to host the container #%s", container.getUid()));
+                    send(ev.getSource(), CloudSim.getMinTimeBetweenEvents(), containerCloudSimTags.CONTAINER_CREATE_ACK, data);
 
                 }
-                send(ev.getSource(), CloudSim.getMinTimeBetweenEvents(), containerCloudSimTags.CONTAINER_CREATE_ACK, data);
-
             }
         }
 
+        else{
+            for (Container container : containerList) {
+                boolean result = temp.allocateVmForContainer(container, getContainerVmList());
+                if (ack) {
+                    int[] data = new int[3];
+                    data[1] = container.getId();
+                    if (result) {
+                        data[2] = CloudSimTags.TRUE;
+                    } else {
+                        data[2] = CloudSimTags.FALSE;
+                    }
+                    if (result) {
+                        ContainerVm containerVm = temp.getContainerVm(container);
+                        data[0] = containerVm.getId();
+                        if(containerVm.getId() == -1){
+
+                            Log.printConcatLine("The ContainerVM ID is not known (-1) !");
+                        }
+    //                    Log.printConcatLine("Assigning the container#" + container.getUid() + "to VM #" + containerVm.getUid());
+                        getContainerList().add(container);
+                        if (container.isBeingInstantiated()) {
+                            container.setBeingInstantiated(false);
+                        }
+                        container.updateContainerProcessing(CloudSim.clock(), getContainerAllocationPolicy().getContainerVm(container).getContainerScheduler().getAllocatedMipsForContainer(container));
+                    } else {
+                        data[0] = -1;
+                        //notAssigned.add(container);
+                        Log.printLine(String.format("Couldn't find a vm to host the container #%s", container.getUid()));
+
+                    }
+                    send(ev.getSource(), CloudSim.getMinTimeBetweenEvents(), containerCloudSimTags.CONTAINER_CREATE_ACK, data);
+
+                }
+            }
+        }
     }
 
     /**

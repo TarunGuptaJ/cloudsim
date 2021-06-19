@@ -27,7 +27,7 @@ public class ContainerInitialPlacementTest {
 //        int repeat = Integer.parseInt(args[1]);
 
         int runTime = 0;
-        int repeat = 1;
+        int repeat = 2;
 
         for (int i = runTime; i < repeat; ++i) {
             boolean enableOutput = true;
@@ -36,25 +36,25 @@ public class ContainerInitialPlacementTest {
              * Getting the path of the planet lab workload that is included in the cloudSim Package
              */
             String inputFolder = ContainerOverbooking.class.getClassLoader().getResource("workload/planetlab").getPath();
+
+            /**
+             * The allocation policy used for allocating containers to VMs.
+             */
+            String containerAllocationPolicy = "FirstFitDecreasing";
             /**
              * The output folder for the logs. The log files would be located in this folder.
              */
-            String outputFolder = "~/ResultsFirstFit2";
+            String outputFolder = "~/Results"+containerAllocationPolicy;
             /**
              * The allocation policy for VMs.
              */
             String vmAllocationPolicy = "MSThreshold-Under_0.80_0.70";
 //            String vmAllocationPolicy = "dvfs";
-
-
             /**
              * The selection policy for containers where a container migration is triggered.
              */
             String containerSelectionPolicy = "MaxUsage";
-            /**z
-             * The allocation policy used for allocating containers to VMs.
-             */
-            String containerAllocationPolicy = "FirstFit";
+
             /**
              * The host selection policy determines which hosts should be selected as the migration destination.
              */
