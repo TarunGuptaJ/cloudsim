@@ -13,8 +13,8 @@ public class ContainerPlacementPolicyFFD extends ContainerPlacementPolicy{
     public ContainerVm getContainerVm(List<ContainerVm> vmList, Object obj, Set<? extends ContainerVm> excludedVmList, List<Container> containerList) {
 
 
-        Comparator<Container> compareByRam = (Container c1, Container c2) -> c1.getCurrentAllocatedRam().compareTo(c2.getCurrentAllocatedRam());
-        vmList.sort()
+//        Comparator<Container> compareByRam = (Container c1, Container c2) -> c1.getCurrentAllocatedRam().compareTo(c2.getCurrentAllocatedRam());
+//        vmList.sort();
 
         ContainerVm containerVm = null;
         for (ContainerVm containerVm1 : vmList) {

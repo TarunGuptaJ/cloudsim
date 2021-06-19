@@ -54,7 +54,7 @@ public class ContainerInitialPlacementTest {
             /**z
              * The allocation policy used for allocating containers to VMs.
              */
-            String containerAllocationPolicy = "Hybrid";
+            String containerAllocationPolicy = "FirstFit";
             /**
              * The host selection policy determines which hosts should be selected as the migration destination.
              */

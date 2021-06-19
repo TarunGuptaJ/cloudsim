@@ -9,6 +9,9 @@ import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.core.SimEntity;
 import org.cloudbus.cloudsim.core.SimEvent;
+import org.cloudbus.cloudsim.container.containerPlacementPolicies.ContainerPlacementPolicyFFD;
+
+
 
 import java.util.*;
 
@@ -304,6 +307,48 @@ public class ContainerDatacenter extends SimEntity {
         else if(temp.getContainerPlacementPolicy_t()=="FirstFitDecreasing"){
 
             Collections.sort(containerList, new SortByRam());
+            System.out.println(getContainerVmList());
+            int[] data = new int[3];
+            boolean result = true;
+
+            ContainerPlacementPolicyFFD placementPolicyFFD = new ContainerPlacementPolicyFFD();
+
+            for(Container container_t : containerList){
+                if(ack) {
+                    //checks required : excludedVmlist
+                    //add data variable
+                    data[1] = container_t.getId();
+
+                    boolean found = false;
+                    int tries = 0;
+                    Set<ContainerVm> excludedVmList = new HashSet<>();
+                    data[2] = CloudSimTags.TRUE;
+
+                    ContainerVm containerVm = null;
+
+                    do {
+
+
+                        ContainerVm containerVm2 = placementPolicyFFD.getContainerVm(getContainerVmList(), container_t, excludedVmList);
+
+                        if (containerVm2 == null) {
+                            containerVm = null;
+                        }
+                        if (containerVm2.isSuitableForContainer(container_t)) {
+                            found = true;
+                            containerVm = containerVm2;
+
+                        } else {
+                            excludedVmList.add(containerVm2);
+                            tries++;
+
+                        }
+                    } while (!found & tries < getContainerVmList().size());
+                    data[0] = containerVm.getId();
+                }
+
+
+            }
 
 
 //            ContainerVm containerVm = null;
@@ -317,6 +362,7 @@ public class ContainerDatacenter extends SimEntity {
 //            return containerVm;
         }
 
+        int count2 = 0;
 
         for (Container container : containerList) {
             boolean result = temp.allocateVmForContainer(container, getContainerVmList());
@@ -329,6 +375,8 @@ public class ContainerDatacenter extends SimEntity {
                     data[2] = CloudSimTags.FALSE;
                 }
                 if (result) {
+                    count2++;
+                    System.out.println("count2 : " + count2);
                     ContainerVm containerVm = temp.getContainerVm(container);
                     data[0] = containerVm.getId();
                     if(containerVm.getId() == -1){
