@@ -288,17 +288,89 @@ public class ContainerDatacenter extends SimEntity {
         }
     }
 
+
+    private Boolean isPlacableinVm(ContainerVm Vm, Container Container_t, Map<ContainerVm, List<Double>> VmlistInfo, Map<Container, List<Double>>  ContainerlistInfo){
+        if(((ContainerlistInfo.get(Container_t)).get(0) >(VmlistInfo.get(Vm)).get(0)) || ((ContainerlistInfo.get(Container_t)).get(1) >(VmlistInfo.get(Vm)).get(1))){
+            return false;
+        }
+        return true;
+    }
+
+    private int getRemainingSpace( Map<ContainerVm, List<Double>> VmlistInfo, Map<Container, List<Double>>  ContainerlistInfo){
+        Set<ContainerVm> activatedVm = new HashSet<ContainerVm>();
+
+
+        System.out.println("-----------------------------");
+        for (Map.Entry <Container, List<Double>> ContainerInfo  : ContainerlistInfo.entrySet()){
+
+            for (Map.Entry <ContainerVm, List<Double>> VmInfo  : VmlistInfo.entrySet()){
+
+                if (isPlacableinVm(VmInfo.getKey(),ContainerInfo.getKey(),VmlistInfo,ContainerlistInfo)){
+
+                    VmInfo.getValue().set(0,VmInfo.getValue().get(0) - ContainerInfo.getValue().get(0));
+                    VmInfo.getValue().set(1,VmInfo.getValue().get(1) - ContainerInfo.getValue().get(1));
+                    activatedVm.add(VmInfo.getKey());
+
+                    System.out.print(ContainerInfo.getKey().getId());
+                    System.out.print("--->");
+                    System.out.println(VmInfo.getKey().getId());
+                    break;
+                }
+            }
+        }
+        System.out.println("-----------------------------");
+
+        int val = 0;
+        for( ContainerVm Vm : activatedVm){
+            val += VmlistInfo.get(Vm).get(1);
+        }
+        System.out.println("-----------------------------");
+        System.out.println(ContainerlistInfo);
+        System.out.println("-----------------------------");
+        System.out.println(VmlistInfo);
+        System.out.println("-----------------------------");
+        System.out.println(activatedVm);
+        System.out.println("-----------------------------");
+
+
+        return val;
+
+    }
+
     public void processContainerSubmit(SimEvent ev, boolean ack) {
         List<Container> containerList = (List<Container>) ev.getData();
         ContainerAllocationPolicy temp = getContainerAllocationPolicy();
-        System.out.println("----------------temp.getContainerPlacementPolicy()");
-
-        System.out.println(temp.getContainerPlacementPolicy_t());
-        System.out.println("----------------temp.getContainerPlacementPolicy()");
-
         if(temp.getContainerPlacementPolicy_t()=="Hybrid"){
             Map<Integer,Integer> datamap_t = new HashMap();
             Collections.sort(containerList, new SortByRam());
+
+
+            Map<ContainerVm, List<Double>> VmlistInfo = new HashMap<ContainerVm, List<Double>>();
+            for(ContainerVm Vm: getContainerVmList()){
+                List<Double> VmInfo = new ArrayList<Double>();
+                VmInfo.add(Vm.getContainerScheduler().getPeCapacity());
+                VmInfo.add(Vm.getContainerScheduler().getAvailableMips());
+                VmlistInfo.put(Vm,VmInfo);
+            }
+
+            Map<Container, List<Double>> ContainerlistInfo = new HashMap<Container, List<Double>>();
+            for(Container Container_t: containerList){
+                List<Double> ContainerInfo = new ArrayList<Double>();
+                ContainerInfo.add((double)Container_t.getCurrentRequestedMaxMips());
+                ContainerInfo.add(Container_t.getWorkloadTotalMips());
+                ContainerlistInfo.put(Container_t,ContainerInfo);
+            }
+
+            System.out.println(getContainerAllocationPolicy());
+
+
+            // Fitness function
+            int fitness = getRemainingSpace(VmlistInfo,ContainerlistInfo);
+            System.out.println("Fitness: "+fitness);
+
+
+
+
             for (Container container : containerList) {
                 boolean result = temp.allocateVmForContainer(container, getContainerVmList());
                 if (ack) {
@@ -330,21 +402,21 @@ public class ContainerDatacenter extends SimEntity {
                     if (data[0] != -1){
                         datamap_t.put(data[1],data[0]);
                     }
-                }
-                //////// ACO
-
-
-
-
-                for (Map.Entry<Integer,Integer> entry : datamap_t.entrySet()){
-                    int[] data = new int[3];
-                    data[0]=entry.getKey();
-                    data[1]=entry.getValue();
-                    data[2] = CloudSimTags.TRUE;
                     send(ev.getSource(), CloudSim.getMinTimeBetweenEvents(), containerCloudSimTags.CONTAINER_CREATE_ACK,data);
                 }
+
+
+
+
+            // for (Map.Entry<Integer,Integer> entry : datamap_t.entrySet()){
+            //     int[] data = new int[3];
+            //     data[0]=entry.getKey();
+            //     data[1]=entry.getValue();
+            //     data[2] = CloudSimTags.TRUE;
             }
+
         }
+
 
         else if(temp.getContainerPlacementPolicy_t()=="FirstFitDecreasing"){
 

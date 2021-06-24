@@ -40,7 +40,7 @@ public class ContainerInitialPlacementTest {
             /**
              * The allocation policy used for allocating containers to VMs.
              */
-            String containerAllocationPolicy = "FirstFitDecreasing";
+            String containerAllocationPolicy = "Hybrid";
             /**
              * The output folder for the logs. The log files would be located in this folder.
              */
