@@ -254,8 +254,6 @@ public class ContainerDatacenter extends SimEntity {
             case CloudSimTags.VM_MIGRATE_ACK:
                 processVmMigrate(ev, true);
                 break;
-            //datamap_t
-
 
             case CloudSimTags.VM_DATA_ADD_ACK:
                 processDataAdd(ev, true);
@@ -298,40 +296,35 @@ public class ContainerDatacenter extends SimEntity {
 
     private int getRemainingSpace( Map<ContainerVm, List<Double>> VmlistInfo, Map<Container, List<Double>>  ContainerlistInfo){
         Set<ContainerVm> activatedVm = new HashSet<ContainerVm>();
+        Set<Container> notPlacedContainer = new HashSet<Container>();
 
-
-        System.out.println("-----------------------------");
         for (Map.Entry <Container, List<Double>> ContainerInfo  : ContainerlistInfo.entrySet()){
-
+            int flag = 0;
+            // System.out.println("");
+            // System.out.println(ContainerInfo);
             for (Map.Entry <ContainerVm, List<Double>> VmInfo  : VmlistInfo.entrySet()){
-
                 if (isPlacableinVm(VmInfo.getKey(),ContainerInfo.getKey(),VmlistInfo,ContainerlistInfo)){
-
+                    flag =1;
+                    // System.out.println(VmlistInfo);
                     VmInfo.getValue().set(0,VmInfo.getValue().get(0) - ContainerInfo.getValue().get(0));
                     VmInfo.getValue().set(1,VmInfo.getValue().get(1) - ContainerInfo.getValue().get(1));
                     activatedVm.add(VmInfo.getKey());
-
-                    System.out.print(ContainerInfo.getKey().getId());
-                    System.out.print("--->");
-                    System.out.println(VmInfo.getKey().getId());
                     break;
                 }
             }
+            if(flag ==0){
+                notPlacedContainer.add(ContainerInfo.getKey());
+            }
         }
-        System.out.println("-----------------------------");
 
         int val = 0;
         for( ContainerVm Vm : activatedVm){
             val += VmlistInfo.get(Vm).get(1);
         }
-        System.out.println("-----------------------------");
-        System.out.println(ContainerlistInfo);
-        System.out.println("-----------------------------");
-        System.out.println(VmlistInfo);
-        System.out.println("-----------------------------");
-        System.out.println(activatedVm);
-        System.out.println("-----------------------------");
 
+        for( Container Cont: notPlacedContainer){
+            val += ContainerlistInfo.get(Cont).get(1);
+        }
 
         return val;
 
