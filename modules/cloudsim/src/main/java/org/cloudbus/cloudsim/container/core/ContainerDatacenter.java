@@ -8,6 +8,7 @@ import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.core.SimEntity;
 import org.cloudbus.cloudsim.core.SimEvent;
 import org.cloudbus.cloudsim.container.containerPlacementPolicies.ContainerPlacementPolicyFFD;
+import java.lang.Math;
 
 
 
@@ -294,7 +295,10 @@ public class ContainerDatacenter extends SimEntity {
         return true;
     }
 
-    private int getRemainingSpace( Map<ContainerVm, List<Double>> VmlistInfo, Map<Container, List<Double>>  ContainerlistInfo){
+    private double recordFitness = 1000000000;
+    private List<Container> recordOrder = new ArrayList<>();
+
+    private double getRemainingSpace( Map<ContainerVm, List<Double>> VmlistInfo, Map<Container, List<Double>>  ContainerlistInfo){
         Set<ContainerVm> activatedVm = new HashSet<ContainerVm>();
         Set<Container> notPlacedContainer = new HashSet<Container>();
 
@@ -317,7 +321,7 @@ public class ContainerDatacenter extends SimEntity {
             }
         }
 
-        int val = 0;
+        double val = 0;
         for( ContainerVm Vm : activatedVm){
             val += VmlistInfo.get(Vm).get(1);
         }
@@ -330,6 +334,50 @@ public class ContainerDatacenter extends SimEntity {
 
     }
 
+    private List<Container> pickOne(List<List<Container>> population, List<Double> fitnessList)
+    {
+        int index = 0;
+        double r = Math.random();
+
+        while(r > 0) {
+            r = r - fitnessList.get(index);
+            index++;
+        }
+        index--;
+        List<Container> returnContainerList = new ArrayList<>();
+        returnContainerList.addAll(population.get(index));
+
+        return returnContainerList;
+
+
+    }
+
+    private List<Container> mutate(List<Container> containerList, int mutationRate, int populationSize) {
+        List<Container> returnContainerList = new ArrayList<>();
+        returnContainerList.addAll(containerList);
+        for(int i = 0;i<populationSize;++i)
+        {
+            if(Math.random() < mutationRate) {
+                int indexA = (int) Math.floor(Math.random() * (populationSize + 1));
+                int indexB = (int) Math.floor(Math.random() * (populationSize + 1));
+                Container temp = returnContainerList.get(indexA);
+                returnContainerList.set(indexA, returnContainerList.get(indexB));
+                returnContainerList.set(indexB, temp);
+
+            }
+        }
+        return returnContainerList;
+    }
+
+    private List<List<Container>> nextGeneration(List<List<Container>> population) {
+        List<List<Container>> newPopulation = new ArrayList<>();
+        for(int i = 0; i<population.size();++i)
+        {
+
+        }
+        return population;
+    }
+
     public void processContainerSubmit(SimEvent ev, boolean ack) {
         List<Container> containerList = (List<Container>) ev.getData();
         ContainerAllocationPolicy temp = getContainerAllocationPolicy();
@@ -337,7 +385,7 @@ public class ContainerDatacenter extends SimEntity {
             Map<Integer,Integer> datamap_t = new HashMap();
             Collections.sort(containerList, new SortByRam());
 
-
+            // Creating VM list info
             Map<ContainerVm, List<Double>> VmlistInfo = new HashMap<ContainerVm, List<Double>>();
             for(ContainerVm Vm: getContainerVmList()){
                 List<Double> VmInfo = new ArrayList<Double>();
@@ -346,21 +394,92 @@ public class ContainerDatacenter extends SimEntity {
                 VmlistInfo.put(Vm,VmInfo);
             }
 
-            Map<Container, List<Double>> ContainerlistInfo = new HashMap<Container, List<Double>>();
-            for(Container Container_t: containerList){
-                List<Double> ContainerInfo = new ArrayList<Double>();
-                ContainerInfo.add((double)Container_t.getCurrentRequestedMaxMips());
-                ContainerInfo.add(Container_t.getWorkloadTotalMips());
-                ContainerlistInfo.put(Container_t,ContainerInfo);
-            }
+
 
             System.out.println(getContainerAllocationPolicy());
 
 
             // Fitness function
-            int fitness = getRemainingSpace(VmlistInfo,ContainerlistInfo);
-            System.out.println("Fitness: "+fitness);
+            // int fitness = getRemainingSpace(VmlistInfo,ContainerlistInfo);
+            // System.out.println("Fitness: "+fitness);
 
+            // Creating the population list
+            List<List<Container>> population = new ArrayList<>();
+
+            // Population Size
+            int populationSize = 10;
+
+            // Creating the population
+            for(int i = 0;i<populationSize;++i)
+            {
+                List<Container> tempContainerList = new ArrayList<>();
+                if(i == 0) {
+                    tempContainerList.addAll(containerList);
+                } else {
+                    tempContainerList.addAll(population.get(i-1));
+                }
+                Collections.shuffle(tempContainerList, new Random());
+                Collections.shuffle(tempContainerList, new Random());
+                population.add(tempContainerList);
+
+                System.out.println(i);
+                for(Container j : tempContainerList)
+                {
+                    System.out.print(j.getId() + " ");
+                }
+                System.out.println();
+
+
+            }
+
+
+            // System.out.println(population.size());
+
+            // Creating the fitness list
+            List<Double> fitnessList = new ArrayList<>();
+
+            // Populating the fitness values for the population
+            for(int i = 0;i<populationSize;++i)
+            {
+                Map<Container, List<Double>> ContainerlistInfo = new HashMap<Container, List<Double>>();
+
+                for(Container Container_t: population.get(i)){
+                    List<Double> ContainerInfo = new ArrayList<Double>();
+                    ContainerInfo.add((double)Container_t.getCurrentRequestedMaxMips());
+                    ContainerInfo.add(Container_t.getWorkloadTotalMips());
+                    ContainerlistInfo.put(Container_t,ContainerInfo);
+                }
+
+                double fitness = getRemainingSpace(VmlistInfo,ContainerlistInfo);
+
+                fitnessList.add(fitness);
+
+
+            }
+
+            // Normalizing the Fitness value
+            int totalFitness = 0;
+            for(int i = 0;i<populationSize;++i)
+            {
+                totalFitness+=fitnessList.get(i);
+            }
+
+            for(int i = 0;i<populationSize;++i)
+            {
+                fitnessList.set(i,fitnessList.get(i)/totalFitness);
+                if(fitnessList.get(i) < recordFitness)
+                {
+                    recordFitness = fitnessList.get(i);
+                    recordOrder = new ArrayList<>();
+                    recordOrder.addAll(population.get(i));
+                }
+            }
+
+
+
+            System.out.println(fitnessList);
+            System.out.println(recordFitness);
+            System.out.println(recordOrder);
 
 
 
