@@ -352,14 +352,14 @@ public class ContainerDatacenter extends SimEntity {
 
     }
 
-    private List<Container> mutate(List<Container> containerList, int mutationRate, int populationSize) {
+    private List<Container> mutate(List<Container> containerList, double mutationRate, int populationSize) {
         List<Container> returnContainerList = new ArrayList<>();
         returnContainerList.addAll(containerList);
         for(int i = 0;i<populationSize;++i)
         {
             if(Math.random() < mutationRate) {
-                int indexA = (int) Math.floor(Math.random() * (populationSize + 1));
-                int indexB = (int) Math.floor(Math.random() * (populationSize + 1));
+                int indexA = (int) Math.floor(Math.random() * (returnContainerList.size()));
+                int indexB = (int) Math.floor(Math.random() * (returnContainerList.size()));
                 Container temp = returnContainerList.get(indexA);
                 returnContainerList.set(indexA, returnContainerList.get(indexB));
                 returnContainerList.set(indexB, temp);
@@ -369,13 +369,56 @@ public class ContainerDatacenter extends SimEntity {
         return returnContainerList;
     }
 
-    private List<List<Container>> nextGeneration(List<List<Container>> population) {
+    private List<Container> crossOver(List<Container> orderA, List<Container> orderB, int populationSize) {
+        List<Container> returnMerged = new ArrayList<>();
+        int start = (int) Math.floor(Math.random() * (orderA.size()));
+        int end = (int) Math.floor(Math.random() * (orderA.size()));
+        for(int i = start; i<end ;++i)
+        {
+            returnMerged.add(orderA.get(i));
+        }
+
+        for(int i = 0;i<orderB.size();++i)
+        {
+            if(!returnMerged.contains(orderB.get(i))) {
+                returnMerged.add(orderB.get(i));
+            }
+        }
+        return returnMerged;
+    }
+
+    private List<List<Container>> nextGeneration(List<List<Container>> population,  List<Double> fitnessList) {
         List<List<Container>> newPopulation = new ArrayList<>();
         for(int i = 0; i<population.size();++i)
         {
+            List<Container> orderA = pickOne(population, fitnessList);
+            List<Container> orderB = pickOne(population, fitnessList);
+            List<Container> merged = crossOver(orderA, orderB, population.size());
+            merged = mutate(merged, 0.1, population.size());
+            newPopulation.add(merged);
+        }
+        return newPopulation;
+    }
+
+    private List<Double> getFitnessList(int populationSize, Map<ContainerVm, List<Double>> VmlistInfo, List<List<Container>> population) {
+        List<Double> returnFitnessList = new ArrayList<>();
+        for(int i = 0;i<populationSize;++i)
+        {
+            Map<Container, List<Double>> ContainerlistInfo = new HashMap<Container, List<Double>>();
+
+            for(Container Container_t: population.get(i)){
+                List<Double> ContainerInfo = new ArrayList<Double>();
+                ContainerInfo.add((double)Container_t.getCurrentRequestedMaxMips());
+                ContainerInfo.add(Container_t.getWorkloadTotalMips());
+                ContainerlistInfo.put(Container_t,ContainerInfo);
+            }
+
+            double fitness = getRemainingSpace(VmlistInfo,ContainerlistInfo);
+
+            returnFitnessList.add(fitness);
 
         }
-        return population;
+        return returnFitnessList;
     }
 
     public void processContainerSubmit(SimEvent ev, boolean ack) {
@@ -398,16 +441,11 @@ public class ContainerDatacenter extends SimEntity {
 
             System.out.println(getContainerAllocationPolicy());
 
-
-            // Fitness function
-            // int fitness = getRemainingSpace(VmlistInfo,ContainerlistInfo);
-            // System.out.println("Fitness: "+fitness);
-
             // Creating the population list
             List<List<Container>> population = new ArrayList<>();
 
             // Population Size
-            int populationSize = 10;
+            int populationSize = 100;
 
             // Creating the population
             for(int i = 0;i<populationSize;++i)
@@ -433,57 +471,35 @@ public class ContainerDatacenter extends SimEntity {
             }
 
 
-            // System.out.println(population.size());
+            int convergence = 1000;
+            while(convergence != 0) {
 
-            // Creating the fitness list
-            List<Double> fitnessList = new ArrayList<>();
+                List<Double> fitnessList = getFitnessList(populationSize, VmlistInfo ,population);
 
-            // Populating the fitness values for the population
-            for(int i = 0;i<populationSize;++i)
-            {
-                Map<Container, List<Double>> ContainerlistInfo = new HashMap<Container, List<Double>>();
-
-                for(Container Container_t: population.get(i)){
-                    List<Double> ContainerInfo = new ArrayList<Double>();
-                    ContainerInfo.add((double)Container_t.getCurrentRequestedMaxMips());
-                    ContainerInfo.add(Container_t.getWorkloadTotalMips());
-                    ContainerlistInfo.put(Container_t,ContainerInfo);
-                }
-
-                double fitness = getRemainingSpace(VmlistInfo,ContainerlistInfo);
-
-                fitnessList.add(fitness);
-
-
-            }
-
-            // Normalizing the Fitness value
-            int totalFitness = 0;
-            for(int i = 0;i<populationSize;++i)
-            {
-                totalFitness+=fitnessList.get(i);
-            }
-
-            for(int i = 0;i<populationSize;++i)
-            {
-                fitnessList.set(i,fitnessList.get(i)/totalFitness);
-                if(fitnessList.get(i) < recordFitness)
+                int totalFitness = 0;
+                for(int i = 0;i<populationSize;++i)
                 {
-                    recordFitness = fitnessList.get(i);
-                    recordOrder = new ArrayList<>();
-                    recordOrder.addAll(population.get(i));
+                    totalFitness+=fitnessList.get(i);
                 }
+
+                for(int i = 0;i<populationSize;++i)
+                {
+                    fitnessList.set(i,fitnessList.get(i)/totalFitness);
+                    if(fitnessList.get(i) < recordFitness)
+                    {
+                        recordFitness = fitnessList.get(i);
+                        recordOrder = new ArrayList<>();
+                        recordOrder.addAll(population.get(i));
+                    }
+                }
+                population = nextGeneration(population, fitnessList);
+                System.out.println(convergence);
+                --convergence;
             }
 
 
 
-            System.out.println(fitnessList);
-            System.out.println(recordFitness);
-            System.out.println(recordOrder);
-
-
-
-            for (Container container : containerList) {
+            for (Container container : recordOrder) {
                 boolean result = temp.allocateVmForContainer(container, getContainerVmList());
                 if (ack) {
                     int[] data = new int[3];
