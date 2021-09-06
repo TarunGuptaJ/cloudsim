@@ -27,7 +27,7 @@ public class ContainerInitialPlacementTest {
 //        int repeat = Integer.parseInt(args[1]);
 
         int runTime = 0;
-        int repeat = 1;
+        int repeat = 2;
 
         for (int i = runTime; i < repeat; ++i) {
             boolean enableOutput = true;
@@ -40,7 +40,7 @@ public class ContainerInitialPlacementTest {
             /**
              * The allocation policy used for allocating containers to VMs.
              */
-            String containerAllocationPolicy = "Hybrid";
+            String containerAllocationPolicy = "FirstFit";
             /**
              * The output folder for the logs. The log files would be located in this folder.
              */
@@ -49,6 +49,7 @@ public class ContainerInitialPlacementTest {
              * The allocation policy for VMs.
              */
             String vmAllocationPolicy = "MSThreshold-Under_0.80_0.70";
+//            String vmAllocationPolicy = "lrr";
 //            String vmAllocationPolicy = "dvfs";
             /**
              * The selection policy for containers where a container migration is triggered.

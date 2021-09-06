@@ -74,6 +74,7 @@ public class PowerDatacenter extends Datacenter {
 		setDisableMigrations(false);
 		setCloudletSubmitted(-1);
 		setMigrationCount(0);
+		System.out.println("----------------------------------MARKER--------------------------------");
 	}
 
 	@Override
@@ -172,6 +173,7 @@ public class PowerDatacenter extends Datacenter {
 		double timeDiff = currentTime - getLastProcessTime();
 		double timeFrameDatacenterEnergy = 0.0;
 
+		System.out.println("----------------------------------MARKER--------------------------------");
 		Log.printLine("\n\n--------------------------------------------------------------\n\n");
 		Log.formatLine("New resource usage for the time frame starting at %.2f:", currentTime);
 
@@ -197,13 +199,17 @@ public class PowerDatacenter extends Datacenter {
 					currentTime);
 
 			for (PowerHost host : this.<PowerHost> getHostList()) {
+				System.out.println("----------------------------------MARKER--------------------------------");
+				System.out.println("Prev :"+host.getPreviousUtilizationOfCpu());
+				System.out.println("Utilization :"+host.getUtilizationOfCpu());
+				System.out.println("----------------------------------MARKER--------------------------------");
 				double previousUtilizationOfCpu = host.getPreviousUtilizationOfCpu();
 				double utilizationOfCpu = host.getUtilizationOfCpu();
 				double timeFrameHostEnergy = host.getEnergyLinearInterpolation(
 						previousUtilizationOfCpu,
 						utilizationOfCpu,
 						timeDiff);
-				timeFrameDatacenterEnergy += timeFrameHostEnergy;
+				timeFrameDatacenterEnergy += host.getUtilizationOfCpu()*timeFrameHostEnergy;
 
 				Log.printLine();
 				Log.formatLine(
@@ -227,7 +233,7 @@ public class PowerDatacenter extends Datacenter {
 		}
 
 		setPower(getPower() + timeFrameDatacenterEnergy);
-
+//		setPower(0);
 		checkCloudletCompletion();
 
 		/** Remove completed VMs **/
@@ -235,7 +241,7 @@ public class PowerDatacenter extends Datacenter {
 			for (Vm vm : host.getCompletedVms()) {
 				getVmAllocationPolicy().deallocateHostForVm(vm);
 				getVmList().remove(vm);
-				Log.printLine("VM #" + vm.getId() + " has been deallocated from host #" + host.getId());
+				Log.printLine("VM #" + vm.getId() + " has been deallcocated from host #" + host.getId());
 			}
 		}
 

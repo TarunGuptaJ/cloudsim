@@ -79,6 +79,7 @@ public class PowerContainerDatacenter extends ContainerDatacenter {
         super(name, characteristics, vmAllocationPolicy, containerAllocationPolicy, storageList, schedulingInterval, experimentName, logAddress);
         String containerMigrationAddress;
         String vmMigrationAddress;
+        System.out.println("----------------------------------MARKER--------------------------------");
         int index = getExperimentName().lastIndexOf("_");
         containerMigrationAddress = String.format("%s/ContainerMigration/%s/%s.csv",getLogAddress(), getExperimentName().substring(0,index) ,getExperimentName());
         String energyConsumptionAddress = String.format("%s/EnergyConsumption/%s/%s.csv", getLogAddress(), getExperimentName().substring(0,index) ,getExperimentName()) ;
@@ -115,7 +116,7 @@ public class PowerContainerDatacenter extends ContainerDatacenter {
             return;
         }
         double currentTime = CloudSim.clock();
-
+        System.out.println("----------------------------------MARKER--------------------------------");
         // if some time passed since last processing
         if (currentTime > getLastProcessTime()) {
             System.out.print(currentTime + " ");
@@ -209,6 +210,7 @@ public class PowerContainerDatacenter extends ContainerDatacenter {
         Log.printLine("\n\n--------------------------------------------------------------\n\n");
         Log.formatLine("Power data center: New resource usage for the time frame starting at %.2f:", currentTime);
 
+
         for (PowerContainerHost host : this.<PowerContainerHost>getHostList()) {
             Log.printLine();
 
@@ -230,6 +232,17 @@ public class PowerContainerDatacenter extends ContainerDatacenter {
                     getLastProcessTime(),
                     currentTime);
 
+            double maxUtilizationCpu_t = 0.0;
+            for(PowerContainerHost host : this.<PowerContainerHost>getHostList()) {
+                if(maxUtilizationCpu_t < host.getUtilizationOfCpu())
+                {
+                    maxUtilizationCpu_t = host.getUtilizationOfCpu();
+                }
+
+
+            }
+            maxUtilizationCpu_t = 0.75 + (0.25*maxUtilizationCpu_t);
+
             for (PowerContainerHost host : this.<PowerContainerHost>getHostList()) {
                 double previousUtilizationOfCpu = host.getPreviousUtilizationOfCpu();
                 double utilizationOfCpu = host.getUtilizationOfCpu();
@@ -237,8 +250,9 @@ public class PowerContainerDatacenter extends ContainerDatacenter {
                         previousUtilizationOfCpu,
                         utilizationOfCpu,
                         timeDiff);
-                timeFrameDatacenterEnergy += timeFrameHostEnergy;
 
+
+                timeFrameDatacenterEnergy += (maxUtilizationCpu_t*timeFrameHostEnergy);
                 Log.printLine();
                 Log.formatLine(
                         "%.2f: [Host #%d] utilization at %.2f was %.2f%%, now is %.2f%%",
@@ -263,6 +277,7 @@ public class PowerContainerDatacenter extends ContainerDatacenter {
         }
 
         setPower(getPower() + timeFrameDatacenterEnergy);
+//        setPower(0);
 
         String[]msg ={Double.toString(currentTime),Double.toString(getPower())};
         try {

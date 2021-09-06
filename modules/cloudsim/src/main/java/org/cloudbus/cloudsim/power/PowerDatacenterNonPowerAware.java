@@ -57,6 +57,7 @@ public class PowerDatacenterNonPowerAware extends PowerDatacenter {
 			List<Storage> storageList,
 			double schedulingInterval) throws Exception {
 		super(name, characteristics, vmAllocationPolicy, storageList, schedulingInterval);
+		System.out.println("----------------------------------MARKER--------------------------------");
 	}
 
 	@Override
@@ -68,7 +69,7 @@ public class PowerDatacenterNonPowerAware extends PowerDatacenter {
 		}
 		double currentTime = CloudSim.clock();
 		double timeframePower = 0.0;
-
+		System.out.println("----------------------------------MARKER--------------------------------");
 		if (currentTime > getLastProcessTime()) {
 			double timeDiff = currentTime - getLastProcessTime();
 			double minTime = Double.MAX_VALUE;
@@ -76,6 +77,7 @@ public class PowerDatacenterNonPowerAware extends PowerDatacenter {
 			Log.printLine("\n");
 
 			for (PowerHost host : this.<PowerHost> getHostList()) {
+				System.out.println("----------------------------------MARKER--------------------------------");
 				Log.formatLine("%.2f: Host #%d", CloudSim.clock(), host.getId());
 
 				double hostPower = 0.0;
@@ -113,7 +115,8 @@ public class PowerDatacenterNonPowerAware extends PowerDatacenter {
 				}
 			}
 
-			setPower(getPower() + timeframePower);
+//			setPower(getPower() + timeframePower);
+			setPower(0.0);
 
 			checkCloudletCompletion();
 
@@ -122,7 +125,7 @@ public class PowerDatacenterNonPowerAware extends PowerDatacenter {
 				for (Vm vm : host.getCompletedVms()) {
 					getVmAllocationPolicy().deallocateHostForVm(vm);
 					getVmList().remove(vm);
-					Log.printLine("VM #" + vm.getId() + " has been deallocated from host #" + host.getId());
+					Log.printLine("VM #" + vm.getId() + " has been deallcocated from host ref #" + host.getId());
 				}
 			}
 
