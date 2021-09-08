@@ -238,8 +238,6 @@ public class PowerContainerDatacenter extends ContainerDatacenter {
                 {
                     maxUtilizationCpu_t = host.getUtilizationOfCpu();
                 }
-
-
             }
             maxUtilizationCpu_t = 0.75 + (0.25*maxUtilizationCpu_t);
 
@@ -251,8 +249,14 @@ public class PowerContainerDatacenter extends ContainerDatacenter {
                         utilizationOfCpu,
                         timeDiff);
 
-
+                // DVFS implementation
                 timeFrameDatacenterEnergy += (maxUtilizationCpu_t*timeFrameHostEnergy);
+
+                // OR
+
+                //Power Unaware
+                // timeFrameDatacenterEnergy += timeFrameHostEnergy;
+
                 Log.printLine();
                 Log.formatLine(
                         "%.2f: [Host #%d] utilization at %.2f was %.2f%%, now is %.2f%%",

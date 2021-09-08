@@ -40,7 +40,11 @@ public class ContainerInitialPlacementTest {
             /**
              * The allocation policy used for allocating containers to VMs.
              */
-            String containerAllocationPolicy = "FirstFit";
+            String containerAllocationPolicy = "Hybrid";
+            // String containerAllocationPolicy = "FirstFitDecreasing";
+            // String containerAllocationPolicy = "FirstFit";
+            // String containerAllocationPolicy = "MostFull";
+            // String containerAllocationPolicy = "LeastFull";
             /**
              * The output folder for the logs. The log files would be located in this folder.
              */
@@ -49,8 +53,6 @@ public class ContainerInitialPlacementTest {
              * The allocation policy for VMs.
              */
             String vmAllocationPolicy = "MSThreshold-Under_0.80_0.70";
-//            String vmAllocationPolicy = "lrr";
-//            String vmAllocationPolicy = "dvfs";
             /**
              * The selection policy for containers where a container migration is triggered.
              */

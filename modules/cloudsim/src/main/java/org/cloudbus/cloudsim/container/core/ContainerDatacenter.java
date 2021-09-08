@@ -304,8 +304,6 @@ public class ContainerDatacenter extends SimEntity {
 
         for (Map.Entry <Container, List<Double>> ContainerInfo  : ContainerlistInfo.entrySet()){
             int flag = 0;
-            // System.out.println("");
-            // System.out.println(ContainerInfo);
             for (Map.Entry <ContainerVm, List<Double>> VmInfo  : VmlistInfo.entrySet()){
                 if (isPlacableinVm(VmInfo.getKey(),ContainerInfo.getKey(),VmlistInfo,ContainerlistInfo)){
                     flag =1;
@@ -424,6 +422,7 @@ public class ContainerDatacenter extends SimEntity {
     public void processContainerSubmit(SimEvent ev, boolean ack) {
         List<Container> containerList = (List<Container>) ev.getData();
         ContainerAllocationPolicy temp = getContainerAllocationPolicy();
+
         if(temp.getContainerPlacementPolicy_t()=="Hybrid"){
             Map<Integer,Integer> datamap_t = new HashMap();
             Collections.sort(containerList, new SortByRam());
@@ -436,10 +435,6 @@ public class ContainerDatacenter extends SimEntity {
                 VmInfo.add(Vm.getContainerScheduler().getAvailableMips());
                 VmlistInfo.put(Vm,VmInfo);
             }
-
-
-
-            System.out.println(getContainerAllocationPolicy());
 
             // Creating the population list
             List<List<Container>> population = new ArrayList<>();
@@ -460,14 +455,12 @@ public class ContainerDatacenter extends SimEntity {
                 Collections.shuffle(tempContainerList, new Random());
                 population.add(tempContainerList);
 
-                System.out.println(i);
-                for(Container j : tempContainerList)
-                {
-                    System.out.print(j.getId() + " ");
-                }
-                System.out.println();
-
-
+                // System.out.println(i);
+                // for(Container j : tempContainerList)
+                // {
+                //     System.out.print(j.getId() + " ");
+                // }
+                // System.out.println();
             }
 
 
@@ -493,7 +486,7 @@ public class ContainerDatacenter extends SimEntity {
                     }
                 }
                 population = nextGeneration(population, fitnessList);
-                System.out.println(convergence);
+                // System.out.println(convergence);
                 --convergence;
             }
 
@@ -548,7 +541,9 @@ public class ContainerDatacenter extends SimEntity {
 
         else if(temp.getContainerPlacementPolicy_t()=="FirstFitDecreasing"){
 
+            //FFD
             Collections.sort(containerList, new SortByRam());
+
             for (Container container : containerList) {
                 boolean result = temp.allocateVmForContainer(container, getContainerVmList());
                 if (ack) {

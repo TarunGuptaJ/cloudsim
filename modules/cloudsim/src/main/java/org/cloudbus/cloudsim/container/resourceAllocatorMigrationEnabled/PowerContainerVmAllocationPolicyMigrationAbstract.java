@@ -7,6 +7,7 @@ import org.cloudbus.cloudsim.container.lists.PowerContainerVmList;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.util.ExecutionTimeMeasurer;
+import org.cloudbus.cloudsim.*;
 
 import java.util.*;
 
@@ -191,6 +192,12 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstract extends 
             Log.printLine("Over-utilized hosts:");
             for (PowerContainerHostUtilizationHistory host : overUtilizedHosts) {
                 Log.printConcatLine("Host #", host.getId());
+                for(ContainerVm vm: host.getVmList()){
+                    Log.printConcatLine(" ",vm.getId());
+                    for(Container con: vm.getContainerList()){
+                        Log.printConcatLine("   ",con.getId());
+                    }
+                }
             }
             Log.printLine();
         }
