@@ -159,6 +159,17 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
         excludedHostsForFindingUnderUtilizedHost.clear();
         excludedHostsForFindingNewContainerPlacement.clear();
 
+        // Migration Map Optimization for Reducing Network Datafootprint
+        List<PowerContainerHost> Hosts_t;
+        List<Container> Containers_t = new LinkedList<Container>();
+        Set<ContainerVm> VMs_t;
+
+        for(Map<String, Object> temp : migrationMap)
+        {
+            Containers_t.add((Container) temp.get("container"));
+        }
+
+        System.out.println(Containers_t);
 
         return migrationMap;
 

@@ -27,7 +27,7 @@ public class ContainerInitialPlacementTest {
 //        int repeat = Integer.parseInt(args[1]);
 
         int runTime = 0;
-        int repeat = 2;
+        int repeat = 1;
 
         for (int i = runTime; i < repeat; ++i) {
             boolean enableOutput = true;
