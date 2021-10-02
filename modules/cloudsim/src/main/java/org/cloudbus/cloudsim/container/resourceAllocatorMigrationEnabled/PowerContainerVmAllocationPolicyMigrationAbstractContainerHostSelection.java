@@ -7,12 +7,27 @@ import org.cloudbus.cloudsim.container.lists.PowerContainerList;
 import org.cloudbus.cloudsim.container.lists.PowerContainerVmList;
 import org.cloudbus.cloudsim.container.vmSelectionPolicies.PowerContainerVmSelectionPolicy;
 import org.cloudbus.cloudsim.Log;
+import org.cloudbus.cloudsim.lists.VmList;
 
 import java.util.*;
 
 /**
  * Created by sareh on 11/08/15.
  */
+
+class VMCompare implements Comparator<ContainerVm>
+{
+    public int compare(ContainerVm v1, ContainerVm v2)
+    {
+        if(v1.getRam() > v2.getRam()) {
+            return -1;
+        }
+        else {
+            return 1;
+        }
+    }
+}
+
 public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainerHostSelection extends PowerContainerVmAllocationPolicyMigrationAbstractContainerAdded {
 
     private HostSelectionPolicy hostSelectionPolicy;
@@ -91,6 +106,11 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
 
     }
 
+    static float max(float a, float b)
+    {
+        return (Math.round(a) > Math.round(b)) ? a : b;
+    }
+
     @Override
     protected Collection<? extends Map<String, Object>> getContainerMigrationMapFromUnderUtilizedHosts(List<PowerContainerHostUtilizationHistory> overUtilizedHosts, List<Map<String, Object>> previouseMap) {
 
@@ -162,14 +182,75 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
         // Migration Map Optimization for Reducing Network Datafootprint
         List<PowerContainerHost> Hosts_t;
         List<Container> Containers_t = new LinkedList<Container>();
-        Set<ContainerVm> VMs_t;
+        Set<ContainerVm> VMs_temp_t = new HashSet<ContainerVm>();
+        List<ContainerVm> VMs_t = new LinkedList<ContainerVm>();
+        List<Container> NotMigratedYet = new LinkedList<Container>();
 
+        // Obtaining the set of containers
         for(Map<String, Object> temp : migrationMap)
         {
             Containers_t.add((Container) temp.get("container"));
+            NotMigratedYet.add((Container) temp.get("container"));
+            VMs_temp_t.add((ContainerVm) temp.get("vm"));
         }
 
-        System.out.println(Containers_t);
+        // Obtaining the set of VMs
+        for(Object temp : VMs_temp_t)
+        {
+            VMs_t.add((ContainerVm) temp);
+        }
+
+        // Sorting the VM list in descending order of their RAM Capacity
+        Collections.sort(VMs_t,new VMCompare());
+
+//        for(ContainerVm temp : VMs_t )
+//        {
+//            System.out.println(temp.getRam() + " " + temp.getTotalMips());
+//        }
+//
+//        for(Container temp : Containers_t)
+//        {
+//            System.out.println(temp.getRam() + " " + temp.getWorkloadMips());
+//        }
+
+
+        for(ContainerVm temp : VMs_t)
+        {
+            float W = temp.getRam();
+            List<Float> weights =  new LinkedList<Float>();
+            List<Float> values = new LinkedList<Float>();
+            for(Container i : NotMigratedYet)
+            {
+                weights.add(i.getRam());
+                values.add((float) i.getWorkloadMips());
+            }
+            List<List<Float>> DP_Matrix = new LinkedList<List<Float>>();
+            // Initializing the matrix with zeroes
+            for(int j = 0;j<=values.size();++j)
+            {
+                DP_Matrix.add(new LinkedList<Float>());
+                for(int k = 0;k<=W;++k)
+                {
+                    DP_Matrix.get(j).add((float)0.0);
+                }
+            }
+
+            for(int j = 0;j<=values.size();++j)
+            {
+                for(int k = 0;k<=W;++k)
+                {
+                    if (j == 0 || k == 0)
+                        DP_Matrix.get(j).set(k,(float) 0.0);
+                    else if(weights.get(j) <= k) {
+                        DP_Matrix.get(j).set(k,max(values.get(j-1) + DP_Matrix.get(j-1).get(k - Math.round(weights.get(j-1))) ,DP_Matrix.get(j-1).get(k)));
+                    }
+                    else {
+                        DP_Matrix.get(j).set(k, DP_Matrix.get(j-1).get(k));
+                    }
+                }
+
+            }
+        }
 
         return migrationMap;
 
@@ -313,3 +394,5 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
         return hostSelectionPolicy;
     }
 }
+
+
