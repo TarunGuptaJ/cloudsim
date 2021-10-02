@@ -203,17 +203,6 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
         // Sorting the VM list in descending order of their RAM Capacity
         Collections.sort(VMs_t,new VMCompare());
 
-//        for(ContainerVm temp : VMs_t )
-//        {
-//            System.out.println(temp.getRam() + " " + temp.getTotalMips());
-//        }
-//
-//        for(Container temp : Containers_t)
-//        {
-//            System.out.println(temp.getRam() + " " + temp.getWorkloadMips());
-//        }
-
-
         for(ContainerVm temp : VMs_t)
         {
             float W = temp.getRam();
@@ -235,14 +224,14 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
                 }
             }
 
-            for(int j = 0;j<=values.size();++j)
+            for(int j = 0;j<values.size();++j)
             {
                 for(int k = 0;k<=W;++k)
                 {
                     if (j == 0 || k == 0)
                         DP_Matrix.get(j).set(k,(float) 0.0);
-                    else if(weights.get(j) <= k) {
-                        DP_Matrix.get(j).set(k,max(values.get(j-1) + DP_Matrix.get(j-1).get(k - Math.round(weights.get(j-1))) ,DP_Matrix.get(j-1).get(k)));
+                    else if(Math.round(weights.get(j)) <= k) {
+                        DP_Matrix.get(j).set(k,max(values.get(j) + DP_Matrix.get(j-1).get(k - Math.round(weights.get(j))) ,DP_Matrix.get(j-1).get(k)));
                     }
                     else {
                         DP_Matrix.get(j).set(k, DP_Matrix.get(j-1).get(k));
@@ -250,6 +239,7 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
                 }
 
             }
+            System.out.println(DP_Matrix);
         }
 
         return migrationMap;
