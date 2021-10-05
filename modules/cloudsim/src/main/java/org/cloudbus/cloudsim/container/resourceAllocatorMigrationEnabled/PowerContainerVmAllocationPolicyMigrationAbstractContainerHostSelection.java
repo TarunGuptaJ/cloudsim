@@ -11,7 +11,7 @@ import org.cloudbus.cloudsim.lists.VmList;
 
 import java.util.*;
 
-/**
+/
  * Created by sareh on 11/08/15.
  */
 
@@ -33,8 +33,8 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
     private HostSelectionPolicy hostSelectionPolicy;
 
     public PowerContainerVmAllocationPolicyMigrationAbstractContainerHostSelection(List<? extends ContainerHost> hostList, PowerContainerVmSelectionPolicy vmSelectionPolicy,
-    		PowerContainerSelectionPolicy containerSelectionPolicy, HostSelectionPolicy hostSelectionPolicy,
-    		int numberOfVmTypes, int[] vmPes, float[] vmRam, long vmBw, long vmSize, double[] vmMips) {
+        PowerContainerSelectionPolicy containerSelectionPolicy, HostSelectionPolicy hostSelectionPolicy,
+        int numberOfVmTypes, int[] vmPes, float[] vmRam, long vmBw, long vmSize, double[] vmMips) {
         super(hostList, vmSelectionPolicy, containerSelectionPolicy, numberOfVmTypes, vmPes, vmRam, vmBw, vmSize, vmMips);
         setHostSelectionPolicy(hostSelectionPolicy);
     }
@@ -100,8 +100,7 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
                     return map;
                 }
             }
-
-        }
+            }
 
 
     }
@@ -189,7 +188,6 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
 
         // DP optimized : Migration Map
         List<Map<String, Object>> DPmigrationMap = new LinkedList<Map<String, Object>>();
-
         System.out.println("Migration Map type");
         // Obtaining the set of containers
         for(Map<String, Object> temp : migrationMap)
@@ -297,7 +295,6 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
                     for(Map<String, Object> tempIter : migrationMap) {
                         if(tempIter.get("container") == tempContainer) {
                             Map<String, Object> map = new HashMap<>();
-
                             for(Map<String, Object> tempIter1 : migrationMap) {
                                 if(tempIter.get("vm") == tempIter1.get("vm")) {
                                     map.put("host", tempIter1.get("host"));
@@ -333,7 +330,7 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
 
     }
 
-    /**
+    /
      * Gets the vms to migrate from under utilized host.
      *
      * @param host the host
@@ -387,9 +384,7 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
 @Override
     protected Map<String, Object> findAvailableHostForContainer(Container container,
                                                                 List<Map<String, Object>> createdVm) {
-
-
-    PowerContainerHost allocatedHost = null;
+              PowerContainerHost allocatedHost = null;
     ContainerVm allocatedVm = null;
     Map<String, Object> map = new HashMap<>();
     Set<ContainerHost> excludedHost1 = new HashSet<>();
@@ -469,6 +464,4 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
     public HostSelectionPolicy getHostSelectionPolicy() {
         return hostSelectionPolicy;
     }
-}
-
-
+}                                                      
