@@ -360,7 +360,8 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
                 previouseHost.containerVmCreate(previouseVm);
 
                 for (Container container : containerList) {
-                    if (previouseVm.isSuitableForContainer(container)) {
+
+                    if (previouseVm!=null && previouseVm.isSuitableForContainer(container)) {
                         previouseVm.containerCreate(container);
                         assignedContainer.add(container);
                         Map<String, Object> migrate = new HashMap<String, Object>();

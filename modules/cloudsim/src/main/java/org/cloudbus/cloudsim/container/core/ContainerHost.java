@@ -216,6 +216,9 @@ public class ContainerHost {
      */
     public boolean containerVmCreate(ContainerVm vm) {
         //Log.printLine("Host: Create VM???......" + vm.getId());
+        if (vm==null){
+            return false;
+        }
         if (getStorage() < vm.getSize()) {
             Log.printConcatLine("[VmScheduler.containerVmCreate] Allocation of VM #", vm.getId(), " to Host #", getId(),
                     " failed by storage");

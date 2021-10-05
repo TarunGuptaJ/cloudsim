@@ -170,7 +170,7 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
             }
 
             excludedHostsForFindingUnderUtilizedHost.addAll(extractHostListFromMigrationMap(newContainerPlacement));
-            // The migration mapp does not have a value for container since the whole vm
+            // The migration map does not have a value for container since the whole vm
             // would be migrated.
             migrationMap.addAll(newContainerPlacement);
             Log.printLine();
@@ -206,18 +206,9 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
         // Sorting the VM list in descending order of their RAM Capacity
         Collections.sort(VMs_t, new VMCompare());
 
-        // for(ContainerVm temp : VMs_t )
-        // {
-        // System.out.println(temp.getRam() + " " + temp.getTotalMips());
-        // }
-        //
-        // for(Container temp : Containers_t)
-        // {
-        // System.out.println(temp.getRam() + " " + temp.getWorkloadMips());
-        // }
-
         for (ContainerVm temp : VMs_t) {
             Integer W = Math.round(temp.getRam());
+            W=(int)Math.round(W*0.8);
             List<Integer> weights = new LinkedList<Integer>();
             List<Integer> values = new LinkedList<Integer>();
             for (Container i : NotMigratedYet) {
@@ -247,24 +238,7 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
                 }
 
             }
-            // The containers placed in this VM are
-            // int i_t = n;
-            // int j = W;
-            //
-            // while (i_t>=0 && j>=0) {
-            // if(K[i_t][j] == K[i_t-1][j]) {
-            // --i_t;
-            // }
-            // else {
-            // cout << "Ith index is included : "<<i_t << "\n";
-            // int temp = K[i_t][j] - val[i_t-1];
-            // --i_t;
-            // while(K[i_t][j] != temp) {
-            // --j;
-            // }
-            // }
-            // }
-            //
+
             System.out.println("-------------------------------");
             System.out.println(" " + values.size() + " " + VMs_t.size());
             int i_t = values.size();
