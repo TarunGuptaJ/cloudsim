@@ -1,16 +1,15 @@
 package org.cloudbus.cloudsim.examples.container;
 
-
 import java.io.IOException;
 
 /**
- * This Example is following the format for {@link org.cloudbus.cloudsim.examples.power.planetlab.Dvfs}
- * It specifically studies the initial placement of containers.
+ * This Example is following the format for
+ * {@link org.cloudbus.cloudsim.examples.power.planetlab.Dvfs} It specifically
+ * studies the initial placement of containers.
  *
  * @author Sareh Fotuhi Piraghaj
  */
 public class ContainerInitialPlacementTest {
-
 
     /**
      * The main method.
@@ -20,22 +19,24 @@ public class ContainerInitialPlacementTest {
      */
     public static void main(String[] args) throws IOException {
         /**
-         * The experiments can be repeated for (repeat - runtime +1) times.
-         * Please set these values as the arguments of the main function or set them bellow:
+         * The experiments can be repeated for (repeat - runtime +1) times. Please set
+         * these values as the arguments of the main function or set them bellow:
          */
-//        int runTime = Integer.parseInt(args[0]);
-//        int repeat = Integer.parseInt(args[1]);
+        // int runTime = Integer.parseInt(args[0]);
+        // int repeat = Integer.parseInt(args[1]);
 
         int runTime = 0;
-        int repeat = 1;
+        int repeat = 10;
 
         for (int i = runTime; i < repeat; ++i) {
             boolean enableOutput = true;
             boolean outputToFile = true;
             /**
-             * Getting the path of the planet lab workload that is included in the cloudSim Package
+             * Getting the path of the planet lab workload that is included in the cloudSim
+             * Package
              */
-            String inputFolder = ContainerOverbooking.class.getClassLoader().getResource("workload/planetlab").getPath();
+            String inputFolder = ContainerOverbooking.class.getClassLoader().getResource("workload/planetlab")
+                    .getPath();
 
             /**
              * The allocation policy used for allocating containers to VMs.
@@ -46,9 +47,10 @@ public class ContainerInitialPlacementTest {
             // String containerAllocationPolicy = "MostFull";
             // String containerAllocationPolicy = "LeastFull";
             /**
-             * The output folder for the logs. The log files would be located in this folder.
+             * The output folder for the logs. The log files would be located in this
+             * folder.
              */
-            String outputFolder = "~/Results"+containerAllocationPolicy;
+            String outputFolder = "~/Results" + containerAllocationPolicy;
             /**
              * The allocation policy for VMs.
              */
@@ -59,32 +61,24 @@ public class ContainerInitialPlacementTest {
             String containerSelectionPolicy = "MaxUsage";
 
             /**
-             * The host selection policy determines which hosts should be selected as the migration destination.
+             * The host selection policy determines which hosts should be selected as the
+             * migration destination.
              */
             String hostSelectionPolicy = "FirstFit";
             /**
-             * The VM Selection Policy is used for selecting VMs to migrate when a host status is determined as
-             * "Overloaded"
+             * The VM Selection Policy is used for selecting VMs to migrate when a host
+             * status is determined as "Overloaded"
              */
             String vmSelectionPolicy = "VmMaxC";
-            /**x
-             * The container overbooking factor is used for overbooking resources of the VM. In this specific case
-             * the overbooking is performed on CPU only.
+            /**
+             * x The container overbooking factor is used for overbooking resources of the
+             * VM. In this specific case the overbooking is performed on CPU only.
              */
 
             int OverBookingFactor = 80;
 
-
-            new RunnerInitiator(
-                    enableOutput,
-                    outputToFile,
-                    inputFolder,
-                    outputFolder,
-                    vmAllocationPolicy,
-                    containerAllocationPolicy,
-                    vmSelectionPolicy,
-                    containerSelectionPolicy,
-                    hostSelectionPolicy,
+            new RunnerInitiator(enableOutput, outputToFile, inputFolder, outputFolder, vmAllocationPolicy,
+                    containerAllocationPolicy, vmSelectionPolicy, containerSelectionPolicy, hostSelectionPolicy,
                     OverBookingFactor, Integer.toString(i), outputFolder);
 
         }
