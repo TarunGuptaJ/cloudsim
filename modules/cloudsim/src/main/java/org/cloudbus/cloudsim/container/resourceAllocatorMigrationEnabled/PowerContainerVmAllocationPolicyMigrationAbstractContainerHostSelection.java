@@ -106,9 +106,9 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
 
     }
 
-    static float max(float a, float b)
+    static Integer max(Integer a, Integer b)
     {
-        return (Math.round(a) > Math.round(b)) ? a : b;
+        return a > b ? a : b;
     }
 
     @Override
@@ -186,9 +186,15 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
         List<ContainerVm> VMs_t = new LinkedList<ContainerVm>();
         List<Container> NotMigratedYet = new LinkedList<Container>();
 
+
+        // DP optimized : Migration Map
+        List<Map<String, Object>> DPmigrationMap = new LinkedList<Map<String, Object>>();
+
+        System.out.println("Migration Map type");
         // Obtaining the set of containers
         for(Map<String, Object> temp : migrationMap)
         {
+            System.out.println(temp);
             Containers_t.add((Container) temp.get("container"));
             NotMigratedYet.add((Container) temp.get("container"));
             VMs_temp_t.add((ContainerVm) temp.get("vm"));
@@ -216,22 +222,22 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
 
         for(ContainerVm temp : VMs_t)
         {
-            float W = temp.getRam();
-            List<Float> weights =  new LinkedList<Float>();
-            List<Float> values = new LinkedList<Float>();
+            Integer W = Math.round(temp.getRam());
+            List<Integer> weights =  new LinkedList<Integer>();
+            List<Integer> values = new LinkedList<Integer>();
             for(Container i : NotMigratedYet)
             {
-                weights.add(i.getRam());
-                values.add((float) i.getWorkloadMips());
+                weights.add(Math.round(i.getRam()));
+                values.add(Math.round((float)i.getWorkloadMips()));
             }
-            List<List<Float>> DP_Matrix = new LinkedList<List<Float>>();
+            List<List<Integer>> DP_Matrix = new LinkedList<List<Integer>>();
             // Initializing the matrix with zeroes
             for(int j = 0;j<=values.size();++j)
             {
-                DP_Matrix.add(new LinkedList<Float>());
+                DP_Matrix.add(new LinkedList<Integer>());
                 for(int k = 0;k<=W;++k)
                 {
-                    DP_Matrix.get(j).add((float)0.0);
+                    DP_Matrix.get(j).add(0);
                 }
             }
 
@@ -240,18 +246,88 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
                 for(int k = 0;k<=W;++k)
                 {
                     if (j == 0 || k == 0)
-                        DP_Matrix.get(j).set(k,(float) 0.0);
-                    else if(weights.get(j) <= k) {
-                        DP_Matrix.get(j).set(k,max(values.get(j-1) + DP_Matrix.get(j-1).get(k - Math.round(weights.get(j-1))) ,DP_Matrix.get(j-1).get(k)));
+                        DP_Matrix.get(j).set(k,0);
+                    else if(weights.get(j-1) <= k) {
+                        DP_Matrix.get(j).set(k,
+                                max(
+                                        values.get(j-1) + DP_Matrix.get(j-1).get(k - weights.get(j-1)),
+                                        DP_Matrix.get(j-1).get(k)
+                                )
+                        );
                     }
                     else {
                         DP_Matrix.get(j).set(k, DP_Matrix.get(j-1).get(k));
                     }
                 }
 
+
             }
+            // The containers placed in this VM are
+            //                int i_t = n;
+//                int j = W;
+//
+//                while (i_t>=0 && j>=0) {
+//                    if(K[i_t][j] == K[i_t-1][j]) {
+//                        --i_t;
+//                    }
+//                    else {
+//                        cout << "Ith index is included : "<<i_t << "\n";
+//                        int temp = K[i_t][j] - val[i_t-1];
+//                        --i_t;
+//                        while(K[i_t][j] != temp) {
+//                            --j;
+//                        }
+//                    }
+//                }
+//
+            System.out.println("-------------------------------");
+            System.out.println(" " + values.size() + " " + VMs_t.size());
+            int i_t = values.size();
+            int j_t = W;
+            while(i_t > 0 && j_t >= 0) {
+                if(DP_Matrix.get(i_t).get(j_t) == DP_Matrix.get(i_t-1).get(j_t)) {
+                    --i_t;
+                }
+                else {
+                    System.out.println("Ith Index container is included : " + i_t);
+
+                    // Getting the already existing host details and VM details
+                    Container tempContainer = Containers_t.get(i_t-1);
+
+                    for(Map<String, Object> tempIter : migrationMap) {
+                        if(tempIter.get("container") == tempContainer) {
+                            Map<String, Object> map = new HashMap<>();
+
+                            for(Map<String, Object> tempIter1 : migrationMap) {
+                                if(tempIter.get("vm") == tempIter1.get("vm")) {
+                                    map.put("host", tempIter1.get("host"));
+                                }
+                            }
+                            map.put("vm", temp);
+//                            map.put("host", tempIter.get("host"));
+                            map.put("container", tempContainer);
+                            DPmigrationMap.add(map);
+                            break;
+
+                        }
+                    }
+
+                    int tempValueforJ = DP_Matrix.get(i_t).get(j_t) - values.get(i_t-1);
+                    --i_t;
+                    while(DP_Matrix.get(i_t).get(j_t) != tempValueforJ && j_t>=0) {
+                        --j_t;
+                    }
+                }
+            }
+            System.out.println("NotMigratedYet" + NotMigratedYet.size());
+            for(Map<String, Object> tempIter : DPmigrationMap){
+                NotMigratedYet.remove(tempIter.get("container"));
+            }
+            System.out.println("NotMigratedYet" + NotMigratedYet.size());
+            System.out.println("-------------------------------");
         }
 
+//        return DPmigrationMap;
         return migrationMap;
 
 
