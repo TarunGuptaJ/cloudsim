@@ -25,6 +25,16 @@ class VMCompare implements Comparator<ContainerVm> {
     }
 }
 
+class HostCompare implements Comparator<PowerContainerHost> {
+    public int compare(PowerContainerHost v1, PowerContainerHost v2) {
+        if (v1.getRam() > v2.getRam()) {
+            return -1;
+        } else {
+            return 1;
+        }
+    }
+}
+
 public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainerHostSelection
         extends PowerContainerVmAllocationPolicyMigrationAbstractContainerAdded {
 
@@ -181,7 +191,8 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
         excludedHostsForFindingNewContainerPlacement.clear();
 
         // Migration Map Optimization for Reducing Network Datafootprint
-        List<PowerContainerHost> Hosts_t;
+        List<PowerContainerHost> Hosts_t = new LinkedList<PowerContainerHost>();
+        Set<PowerContainerHost> Hosts_temp_t = new HashSet<PowerContainerHost>();
         List<Container> Containers_t = new LinkedList<Container>();
         Set<ContainerVm> VMs_temp_t = new HashSet<ContainerVm>();
         List<ContainerVm> VMs_t = new LinkedList<ContainerVm>();
@@ -189,10 +200,10 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
 
         // DP optimized : Migration Map
         List<Map<String, Object>> DPmigrationMap = new LinkedList<Map<String, Object>>();
-        System.out.println("Migration Map type");
+
         // Obtaining the set of containers
         for (Map<String, Object> temp : migrationMap) {
-            System.out.println(temp);
+            Hosts_temp_t.add((PowerContainerHost) temp.get("host"));
             Containers_t.add((Container) temp.get("container"));
             NotMigratedYet.add((Container) temp.get("container"));
             VMs_temp_t.add((ContainerVm) temp.get("vm"));
@@ -203,10 +214,38 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
             VMs_t.add((ContainerVm) temp);
         }
 
-        // Sorting the VM list in descending order of their RAM Capacity
-        Collections.sort(VMs_t, new VMCompare());
+        // Obtaining the set of Hosts
+        for( Object temp: Hosts_temp_t) {
+            Hosts_t.add((PowerContainerHost) temp);
+        }
 
-        for (ContainerVm temp : VMs_t) {
+        // Sorting the Host list in descending order of their RAM Capacity
+        Collections.sort(Hosts_t, new HostCompare());
+
+        // Host based + Sized sorting of VMs
+        List<ContainerVm> NEW_VMs_t = new LinkedList<ContainerVm>();
+
+        for(PowerContainerHost i : Hosts_t) {
+            Set<ContainerVm> temporaryVMs = new HashSet<ContainerVm>();
+            for(Map<String, Object> tempIter : migrationMap) {
+
+                if(tempIter.get("host") == i) {
+                    temporaryVMs.add((ContainerVm) tempIter.get("vm"));
+                }
+            }
+            List<ContainerVm> temporaryVmList = new LinkedList<ContainerVm>();
+            for(ContainerVm j : temporaryVMs) {
+                temporaryVmList.add((ContainerVm) j);
+            }
+            Collections.sort(temporaryVmList,new VMCompare());
+
+            for(ContainerVm j : temporaryVmList) {
+                NEW_VMs_t.add((ContainerVm) j );
+            }
+        }
+
+
+        for (ContainerVm temp : NEW_VMs_t) {
             Integer W = Math.round(temp.getRam());
             List<Integer> weights = new LinkedList<Integer>();
             List<Integer> values = new LinkedList<Integer>();
@@ -238,33 +277,164 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
 
             }
 
-            System.out.println("-------------------------------");
-            System.out.println(" " + values.size() + " " + VMs_t.size());
+
             int i_t = values.size();
             int j_t = W;
             while (i_t > 0 && j_t >= 0) {
                 if (DP_Matrix.get(i_t).get(j_t) == DP_Matrix.get(i_t - 1).get(j_t)) {
                     --i_t;
                 } else {
-                    System.out.println("Ith Index container is included : " + i_t);
+
 
                     // Getting the already existing host details and VM details
                     Container tempContainer = Containers_t.get(i_t - 1);
 
-                    for (Map<String, Object> tempIter : migrationMap) {
-                        if (tempIter.get("container") == tempContainer) {
-                            Map<String, Object> map = new HashMap<>();
-                            for (Map<String, Object> tempIter1 : migrationMap) {
-                                if (tempIter.get("vm") == tempIter1.get("vm")) {
-                                    map.put("host", tempIter1.get("host"));
-                                }
-                            }
-                            map.put("vm", temp);
-                            // map.put("host", tempIter.get("host"));
-                            map.put("container", tempContainer);
+                    for(Map<String, Object> tempIter : migrationMap) {
+                        Map<String, Object> map = new HashMap<>();
+                        if(temp == tempIter.get("vm")) {
+                            map.put("host", tempIter.get("host") );
+                            map.put("container",tempContainer);
+                            map.put("vm",temp);
                             DPmigrationMap.add(map);
-                            break;
+                        }
 
+
+                        break;
+                    }
+//                    for (Map<String, Object> tempIter : migrationMap) {
+//                        if (tempIter.get("container") == tempContainer) {
+//                            Map<String, Object> map = new HashMap<>();
+//                            for (Map<String, Object> tempIter1 : migrationMap) {
+//                                if (temp == tempIter1.get("vm")) {
+//                                    map.put("host", tempIter1.get("host"));
+//                                }
+//                            }
+//                            map.put("vm", temp);
+//                            // map.put("host", tempIter.get("host"));
+//                            map.put("container", tempContainer);
+//                            DPmigrationMap.add(map);
+//                            break;
+//
+//                        }
+//                    }
+
+                    int tempValueforJ = DP_Matrix.get(i_t).get(j_t) - values.get(i_t - 1);
+                    --i_t;
+                    while (DP_Matrix.get(i_t).get(j_t) != tempValueforJ && j_t >= 0) {
+                        --j_t;
+                    }
+                }
+            }
+
+            for (Map<String, Object> tempIter : DPmigrationMap) {
+                NotMigratedYet.remove(tempIter.get("container"));
+            }
+
+        }
+        /*
+        // ------------------------------------------------------------------------------------------------------------------------
+        // DP Migration VM and Host
+        List<ContainerVm> VMH_VMs_t = new LinkedList<ContainerVm>();
+        Set<PowerContainerHost> VMH_Hosts_temp_t = new HashSet<PowerContainerHost>();
+        List<PowerContainerHost> VMH_Hosts_t = new LinkedList<PowerContainerHost>();
+        List<ContainerVm> VMH_NotMigratedYet = new LinkedList<ContainerVm>();
+
+        List<Map<String, Object>> VMH_DPmigrationMap = new LinkedList<Map<String, Object>>();
+
+        System.out.println("HEllo1");
+
+        // Obtaining the set of containers
+        for (Map<String, Object> temp : DPmigrationMap) {
+
+            VMH_VMs_t.add((ContainerVm) temp.get("vm"));
+            VMH_NotMigratedYet.add((ContainerVm) temp.get("vm"));
+            VMH_Hosts_temp_t.add((PowerContainerHost) temp.get("host"));
+        }
+
+        // Obtaining the set of VMs
+        for (Object temp : VMH_Hosts_temp_t) {
+            VMH_Hosts_t.add((PowerContainerHost) temp);
+        }
+
+        // Sorting the VM list in descending order of their RAM Capacity
+        System.out.println("HEllo2");
+        if(VMH_Hosts_t.size() > 1) {
+            Collections.sort(VMH_Hosts_t, new HostCompare());
+        }
+
+        for (PowerContainerHost temp : VMH_Hosts_t) {
+
+            System.out.println("HEllo3");
+
+            Integer W = Math.round(temp.getRam());
+
+            System.out.println(W);
+            List<Integer> weights = new LinkedList<Integer>();
+            List<Integer> values = new LinkedList<Integer>();
+            for (ContainerVm i : VMH_NotMigratedYet) {
+                weights.add(Math.round(i.getRam()));
+                values.add(Math.round((float) i.getTotalMips()));
+            }
+            List<List<Integer>> DP_Matrix = new LinkedList<List<Integer>>();
+            // Initializing the matrix with zeroes
+            for (int j = 0; j <= values.size(); ++j) {
+                DP_Matrix.add(new LinkedList<Integer>());
+                for (int k = 0; k <= W; ++k) {
+                    DP_Matrix.get(j).add(0);
+                }
+            }
+
+            for (int j = 0; j <= values.size(); ++j) {
+                for (int k = 0; k <= W; ++k) {
+                    if (j == 0 || k == 0)
+                        DP_Matrix.get(j).set(k, 0);
+                    else if (weights.get(j - 1) <= k) {
+                        DP_Matrix.get(j).set(k,
+                                max(values.get(j - 1) + DP_Matrix.get(j - 1).get(k - weights.get(j - 1)),
+                                        DP_Matrix.get(j - 1).get(k)));
+                    } else {
+                        DP_Matrix.get(j).set(k, DP_Matrix.get(j - 1).get(k));
+                    }
+                }
+
+            }
+
+
+            int i_t = values.size();
+            int j_t = W;
+            while (i_t > 0 && j_t >= 0) {
+                System.out.println("Hehe");
+                if (DP_Matrix.get(i_t).get(j_t) == DP_Matrix.get(i_t - 1).get(j_t)) {
+                    --i_t;
+                } else {
+
+                    ContainerVm tempVM = VMH_VMs_t.get(i_t - 1);
+
+//                    for (Map<String, Object> tempIter : DPmigrationMap) {
+//                        if (tempIter.get("vm") == tempVM) {
+//                            Map<String, Object> map = new HashMap<>();
+//                            for (Map<String, Object> tempIter1 : migrationMap) {
+//                                if (tempIter.get("vm") == tempIter1.get("vm")) {
+//                                    map.put("container", tempIter1.get("container"));
+//                                }
+//                            }
+//                            map.put("host", temp);
+//                            // map.put("host", tempIter.get("host"));
+//                            map.put("container", tempVM);
+//                            DPmigrationMap.add(map);
+//                            break;
+//
+//                        }
+//                    }
+
+                    for(Map<String, Object> tempIter : DPmigrationMap) {
+                        if(tempIter.get("vm") == tempVM) {
+                            Map<String, Object> map = new HashMap<>();
+                            map.put("vm",tempVM);
+                            map.put("host",temp);
+                            map.put("container", tempIter.get("container"));
+
+                            VMH_DPmigrationMap.add(map);
                         }
                     }
 
@@ -275,14 +445,14 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
                     }
                 }
             }
-            System.out.println("NotMigratedYet" + NotMigratedYet.size());
-            for (Map<String, Object> tempIter : DPmigrationMap) {
+
+            for (Map<String, Object> tempIter : VMH_DPmigrationMap) {
                 NotMigratedYet.remove(tempIter.get("container"));
             }
-            System.out.println("NotMigratedYet" + NotMigratedYet.size());
-            System.out.println("-------------------------------");
-        }
 
+        }
+        System.out.println("HEllo");
+        */
         return DPmigrationMap;
         // return migrationMap;
 
