@@ -208,7 +208,6 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
 
         for (ContainerVm temp : VMs_t) {
             Integer W = Math.round(temp.getRam());
-            W=(int)Math.round(W*0.8);
             List<Integer> weights = new LinkedList<Integer>();
             List<Integer> values = new LinkedList<Integer>();
             for (Container i : NotMigratedYet) {
