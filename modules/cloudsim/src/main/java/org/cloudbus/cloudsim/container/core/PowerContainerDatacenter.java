@@ -79,7 +79,6 @@ public class PowerContainerDatacenter extends ContainerDatacenter {
         super(name, characteristics, vmAllocationPolicy, containerAllocationPolicy, storageList, schedulingInterval, experimentName, logAddress);
         String containerMigrationAddress;
         String vmMigrationAddress;
-        System.out.println("----------------------------------MARKER--------------------------------");
         int index = getExperimentName().lastIndexOf("_");
         containerMigrationAddress = String.format("%s/ContainerMigration/%s/%s.csv",getLogAddress(), getExperimentName().substring(0,index) ,getExperimentName());
         String energyConsumptionAddress = String.format("%s/EnergyConsumption/%s/%s.csv", getLogAddress(), getExperimentName().substring(0,index) ,getExperimentName()) ;
@@ -116,7 +115,6 @@ public class PowerContainerDatacenter extends ContainerDatacenter {
             return;
         }
         double currentTime = CloudSim.clock();
-        System.out.println("----------------------------------MARKER--------------------------------");
         // if some time passed since last processing
         if (currentTime > getLastProcessTime()) {
             System.out.print(currentTime + " ");

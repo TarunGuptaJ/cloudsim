@@ -454,13 +454,6 @@ public class ContainerDatacenter extends SimEntity {
                 Collections.shuffle(tempContainerList, new Random());
                 Collections.shuffle(tempContainerList, new Random());
                 population.add(tempContainerList);
-
-                // System.out.println(i);
-                // for(Container j : tempContainerList)
-                // {
-                //     System.out.print(j.getId() + " ");
-                // }
-                // System.out.println();
             }
 
 
@@ -486,7 +479,6 @@ public class ContainerDatacenter extends SimEntity {
                     }
                 }
                 population = nextGeneration(population, fitnessList);
-                // System.out.println(convergence);
                 --convergence;
             }
 
@@ -525,17 +517,7 @@ public class ContainerDatacenter extends SimEntity {
                     }
                     send(ev.getSource(), CloudSim.getMinTimeBetweenEvents(), containerCloudSimTags.CONTAINER_CREATE_ACK,data);
                 }
-
-
-
-
-            // for (Map.Entry<Integer,Integer> entry : datamap_t.entrySet()){
-            //     int[] data = new int[3];
-            //     data[0]=entry.getKey();
-            //     data[1]=entry.getValue();
-            //     data[2] = CloudSimTags.TRUE;
             }
-
         }
 
 
