@@ -237,7 +237,7 @@ public class PowerContainerDatacenter extends ContainerDatacenter {
                     maxUtilizationCpu_t = host.getUtilizationOfCpu();
                 }
             }
-            maxUtilizationCpu_t = 0.75 + (0.25*maxUtilizationCpu_t);
+            maxUtilizationCpu_t = 0.5 + (0.5*maxUtilizationCpu_t);
 
             for (PowerContainerHost host : this.<PowerContainerHost>getHostList()) {
                 double previousUtilizationOfCpu = host.getPreviousUtilizationOfCpu();
